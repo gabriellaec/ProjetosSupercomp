@@ -1,0 +1,7 @@
+--- valor maximo ---
+12
+
+----- Reconstrução do alinhamento -----
+a: AGCACAC_A
+b: A_CACACTA
+

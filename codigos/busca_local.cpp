@@ -14,8 +14,7 @@ default_random_engine generator(10);
 #define WMAT 2
 #define WMIS -1
 #define WGAP -1
-#define P_MAX 100
-#define RUN 100
+#define RUN 1000
 
 
 struct item {
@@ -48,23 +47,11 @@ int main() {
         b.push_back({base[i]});
     }
 
-// Imprimido sequências iniciais
-    cout << endl << "----- Sequências iniciais -----" << endl;
-    cout << "a - tamanho: " << n << endl;
-    for(auto& el: a){
-        cout << el;
-    }
-    cout << endl;
-    cout << "b - tamanho: " << m << endl;
-    for(auto& el: b){
-        cout << el;
-    }
-    cout << endl;
-
     vector<int> scores;
     vector<string> melhor_seq, melhor_seq_b;
     int max_score_global=0;
     item melhor_item;
+
 // Obtenção do score e das sequências alinhadas
     for (int i=0; i<RUN; i++){
         melhor_item = busca_local(a,b,n,m);
@@ -101,7 +88,7 @@ int w(string a, string b){
     if (a == b)
         return WMAT;  //match
     else if (a != b)
-        return WMIS;
+        return WMIS;  // mismatch
    else
         return WGAP;  // gap
 
@@ -117,14 +104,13 @@ item busca_local(vector<string> a, vector<string> b, int n, int m){
     if (k_max>n)k_max=n;
 
     uniform_int_distribution<int> distribution_k(1,k_max);
-    uniform_int_distribution<int> distribution_p(1,P_MAX);
     
     int k,p;
     int j = 0;
     int i=0;
     
     k = distribution_k(generator);
-    p = distribution_p(generator);
+    p = k*2;
 
     uniform_int_distribution<int> distribution_j(0,m-k);
     uniform_int_distribution<int> distribution_i(0,n-k);

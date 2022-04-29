@@ -8,6 +8,9 @@
 using namespace std;
 using std::max;
 
+#define WMAT 2
+#define WMIS -1
+#define WGAP -1
 
 struct item {
     int valor;
@@ -15,10 +18,16 @@ struct item {
     int salto_j;
 };
 
+struct resultado {
+    int valor;
+    vector<string> seq1;
+    vector<string> seq2;
+};
+
 
 int w(string a, string b);
 item find_max(int diagonal, int delecao, int insercao);
-int smith_waterman(vector<string> a, vector<string> b, int n, int m);
+resultado smith_waterman_results(vector<string> a, vector<string> b, int n, int m);
 
 
 int main() {
@@ -26,7 +35,6 @@ int main() {
     int n=0;
     vector<string> a;
     vector<string> b;
-    int max_score;
 
  // Lendo tamanho das sequências   
     cin >> n >> m;
@@ -42,32 +50,34 @@ int main() {
         b.push_back({base[i]});
     }
 
-// Imprimido sequências iniciais
-    cout << endl << "----- Sequências iniciais -----" << endl;
-    cout << "a - tamanho: " << n << endl;
-    for(auto& el: a){
+    resultado result =smith_waterman_results(a,b,n,m);
+
+    cout << "--- valor maximo ---" << endl;
+    cout << result.valor << endl;
+    
+    cout << endl << "----- Reconstrução do alinhamento -----" << endl;
+    cout << "a: ";
+    for(auto& el: result.seq1){
         cout << el;
     }
     cout << endl;
-    cout << "b - tamanho: " << m << endl;
-    for(auto& el: b){
+    cout << "b: ";
+    for(auto& el: result.seq2){
         cout << el;
     }
-
-// Obtenção do score e das sequências alinhadas
-    max_score = smith_waterman(a,b,n,m);
-
-// Score obtido
-    cout << endl << endl << "----- Score -----" << endl;
-    cout << "max_score: "<< max_score << endl << endl;
+    cout << endl << endl;
 
      return 0;
 }
 
 
 int w(string a, string b){
-    if (a == b) return 2;  //match
-    else return -1;  //mismatch or gap
+    if (a == b)
+        return WMAT;  //match
+    else if (a != b)
+        return WMIS;
+   else
+        return WGAP;  // gap
 }
 
 
@@ -101,59 +111,40 @@ item find_max(int diagonal, int delecao, int insercao){
 }
 
 
-int smith_waterman(vector<string> a, vector<string> b, int n, int m){
-    item H[n+1][m+1];
-    
 
-    // Zerando colunas especificadas
-    for (int i = 0; i <= n; i++) {
-        H[i][0].valor=0;
-    }
-    for (int j = 0; j <= m; j++) {
-        H[0][j].valor = 0;
-    }
-
+resultado smith_waterman_results(vector<string> a, vector<string> b, int n, int m){
+    vector<vector<item>> H;
+    int maximo_H = 0; int max_val_i = 0; int max_val_j = 0;
 
     // Obtendo matriz e achando o valor máximo
     int diagonal, delecao, insercao;
-    int maximo_H = 0; int max_val_i = 0; int max_val_j = 0;
 
+    H.resize(n+1);
+    for (int i=0; i<=n; i++){
+        H[i].resize(m+1);
+    }
     for (int i=1; i<=n; i++){
         for (int j=1; j<=m; j++){
             diagonal = H[i-1][j-1].valor + w(a[i-1],b[j-1]);
             delecao = H[i-1][j].valor - 1;
             insercao = H[i][j-1].valor - 1;
 
-            H[i][j]=find_max(diagonal, delecao, insercao);
+            H[i][j]=(item)(find_max(diagonal, delecao, insercao));
 
             if (H[i][j].valor > maximo_H) {
                     maximo_H=H[i][j].valor;
                     max_val_i=i;
                     max_val_j=j;
             }
+
         }
     }
 
 
-    // Imprimindo a matriz obtida
-    cout << endl << endl << "----- Matriz -----" << endl;
-    for (int i=0; i<=n; i++){
-        for (int j=0; j<=m; j++){
-            cout << H[i][j].valor << " ";
-        }
-        cout << endl;
-    }
-
-
-// ____________________________________________ //
-//  Reconstrução do alinhamento das sequências //
-// __________________________________________ //
 
     vector<string> match_seq_a;
     vector<string> match_seq_b;
-
     int i=max_val_i; int j=max_val_j;
-
 
     // Reconstruindo o caminho a partir dos saltos do struct
     while ( (i>0 && j>0)  && (!(H[i][j].salto_j==0 && H[i][j].salto_i==0)) ) {
@@ -176,34 +167,18 @@ int smith_waterman(vector<string> a, vector<string> b, int n, int m){
         
         
         i= i- H[pos_i][pos_j].salto_i;
-        j=j- H[pos_i][pos_j].salto_j;
-
-                
+        j=j- H[pos_i][pos_j].salto_j;                
     }
-
-    
 
     // Invertendo sequências
     reverse(match_seq_a.begin(),match_seq_a.end());
     reverse(match_seq_b.begin(),match_seq_b.end());
-
-    // Imprimindo resultado
-    cout << endl << "----- Reconstrução do alinhamento -----" << endl;
-    cout << "a: ";
-    for(auto& el: match_seq_a){
-        cout << el;
-    }
-    cout << endl;
-    cout << "b: ";
-    for(auto& el: match_seq_b){
-        cout << el;
-    }
-
-
-    return maximo_H;
+    
+    return {maximo_H, match_seq_a, match_seq_b};
 }
+
 
 // Para compilar: 
 
-// g++ -Wall -O3 proj1.cpp -o proj1 
-// ./proj1 < dna.seq
+// g++ -Wall -O3 heuristica.cpp -o heuristica 
+// ./heuristica < dna.seq > out.txt

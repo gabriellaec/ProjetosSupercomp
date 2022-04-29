@@ -1,10 +1,4 @@
 
------ Sequências iniciais -----
-a - tamanho: 8
-AGCACACA
-b - tamanho: 8
-ACACACTA
-
 
 ----- Score -----
 max_score: 10
