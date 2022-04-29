@@ -1,0 +1,7 @@
+----- Score -----
+max_score: 13
+
+ ----- Melhor subsequência de A -----
+G T A A G T G A G A T 
+ ----- Subsequência B correspondente -----
+G T A A G T C - T A T 
