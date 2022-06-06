@@ -134,12 +134,12 @@ int main() {
 
 
 // ----- Imprimindo Score obtido ----- //
-    // cout << "----- Score -----" << endl;
-    // cout << "max_score: "<< melhor_valor_g << endl << endl;
-    // final_time = omp_get_wtime() - init_time;
-    // cout << "tempo: " << final_time << endl;
+    cout << "----- Score -----" << endl;
+    cout << "max_score: "<< melhor_valor_g << endl << endl;
+    final_time = omp_get_wtime() - init_time;
+    cout << "tempo: " << final_time << endl;
 
-    cout << melhor_valor_g;
+    // cout << melhor_valor_g;
 
      return 0;
 

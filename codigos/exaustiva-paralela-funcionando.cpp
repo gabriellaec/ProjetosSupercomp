@@ -55,8 +55,6 @@ item smith_waterman_results(vector<string> a, vector<string> b, int n, int m);
 int main() {
     double init_time, final_time;
     init_time = omp_get_wtime();
-    cout << "oi";
-
 
     long n=0;
     vector<string> a;
@@ -87,32 +85,19 @@ int main() {
     item melhor, sw_atual;    
     vector<combination> combinations((long)subseqs_a.size()*(long)subseqs_b.size());;  
 
-
-    cout << (long)subseqs_a.size()*(long)subseqs_b.size() << " combinations" << endl;
  
     long i=0;
     for (auto& sub_a : subseqs_a){
         for (auto& sub_b : subseqs_b){
             combinations.push_back({i,sub_a, sub_b});
             i+=1;
-            cout << i << endl;
         }
     }
 
-    
-    // for (auto& el : combinations){
-    //      cout << el.value << endl;}
-    // cout << endl;
-
-   cout << "--------------------";
-
     vector<item> resultados((long)combinations.size());
 
-    cout << "--------------------";
     #pragma omp parallel for shared(resultados) 
     for (auto& el : combinations){
-        // int nthreads = omp_get_num_threads();
-        // cout << nthreads << endl;
         resultados[el.value] = smith_waterman_results(el.seq_a, el.seq_b,(el.seq_a).size(),(el.seq_b).size());
     }
 
@@ -142,12 +127,8 @@ int main() {
     }
     cout << endl;
 
-
-
     final_time = omp_get_wtime() - init_time;
     cout << "tempo: " << final_time << endl;
-
-    // cout << melhor.item_score ;
 
      return 0;
 
@@ -283,94 +264,11 @@ item smith_waterman_results(vector<string> a, vector<string> b, int n, int m){
 }
 
 
-// ----- Função que monta a matriz de alinhamento pelo método de Smith Waterman e em seguida reconstrói o alinhamento das sequências ----- //
-item smith_waterman(vector<string> a, vector<string> b){
-    item_sw H[(long)a.size()+1][(long)b.size()+1];
-    
-
-    // Zerando colunas especificadas
-    for (long i = 0; i <= (long)a.size(); i++) {
-        H[i][0].valor=0;
-    }
-    for (long j = 0; j <= (long)b.size(); j++) {
-        H[0][j].valor = 0;
-    }
-
-
-    // Obtendo matriz e achando o valor máximo
-    long diagonal, delecao, insercao;
-    long maximo_H = 0; long max_val_i = 0; long max_val_j = 0;
-
-    for (long i=1; i<=(long)a.size(); i++){
-        for (long j=1; j<=(long)b.size(); j++){
-            diagonal = H[i-1][j-1].valor + w(a[i-1],b[j-1]);
-            delecao = H[i-1][j].valor - 1;
-            insercao = H[i][j-1].valor - 1;
-
-            H[i][j]=find_max(diagonal, delecao, insercao);
-
-            if (H[i][j].valor > maximo_H) {
-                    maximo_H=H[i][j].valor;
-                    max_val_i=i;
-                    max_val_j=j;
-            }
-        }
-    }
-
-
-// ____________________________________________ //
-//  Reconstrução do alinhamento das sequências //
-// __________________________________________ //
-
-    vector<string> match_seq_a;
-    vector<string> match_seq_b;
-
-    long i=max_val_i; long j=max_val_j;
-
-
-    // Reconstruindo o caminho a partir dos saltos do struct
-    while ( (i>0 && j>0)  && (!(H[i][j].salto_j==0 && H[i][j].salto_i==0)) ) {
-        long pos_i=i;
-        long pos_j=j;
-        if (H[i][j].valor == 0) break; // célula da matriz com valor zero
-
-        if (H[pos_i][pos_j].salto_i==0 && H[pos_i][pos_j].salto_j ==1){
-            match_seq_a.push_back("_");
-            match_seq_b.push_back(b[j-1]);
-        }
-        else if (H[pos_i][pos_j].salto_i==1 && H[pos_i][pos_j].salto_j ==0){
-            match_seq_a.push_back(a[i-1]);
-            match_seq_b.push_back("_");
-        }
-        else{
-            match_seq_a.push_back(a[i-1]);
-            match_seq_b.push_back(b[j-1]);
-        }
-        
-        
-        i= i- H[pos_i][pos_j].salto_i;
-        j=j- H[pos_i][pos_j].salto_j;
-
-                
-    }
-
-    // Invertendo sequências
-    reverse(match_seq_a.begin(),match_seq_a.end());
-    reverse(match_seq_b.begin(),match_seq_b.end());
-
-
-    delete H;
-
-    return {maximo_H, match_seq_a, match_seq_b};
-}
-
-
-
 
 // Para compilar: 
 
 // g++ -Wall -O3 -fopenmp -g exaustiva-paralela-funcionando.cpp -o exaustiva-paralela-funcionando
-// ./exaustiva-paralela-funcionando < dna.seq
+// ./exaustiva-paralela-funcionando < ../inputs/dna.seq
 
 
 // valgrind ./exaustiva-paralela
